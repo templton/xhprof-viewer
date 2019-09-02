@@ -13,6 +13,17 @@ a file `config_override.php` with the following content:
 $config['profile_files_dir'] = '<PROFILE FILES LOCATION>';
 ```
 
+## Как запускать
+
+Например, из стартера:
+
+```php
+require '../../user/client/parts/xhprof/XhprofRunner.php';
+\XhprofRunner::start();
+//some code is going
+\XhprofRunner::stop($controllerName.'-'.$actionName);
+```
+
 ## Contributing
 Everyone is welcome to contribute to this project! If you make a contribution, then the [Contributor Terms](CONTRIBUTOR_TERMS.pdf) apply to your submission.
 
