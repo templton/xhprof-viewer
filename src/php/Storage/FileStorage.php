@@ -81,13 +81,11 @@ class FileStorage extends AbstractStorage
         $grandTotal = $total;
 
         // apply filters
-        /*
         foreach ($bufFiles as $index => $file) {
             if (!($file['timestamp'] >= $params['timestamp_from'] && $file['timestamp'] <= $params['timestamp_to'])) {
                 unset($bufFiles[$index]);
             }
         }
-        */
 
         if (!empty($params['text'])) {
             foreach ($bufFiles as $index => $file) {
@@ -358,6 +356,18 @@ class FileStorage extends AbstractStorage
             );
         }
 
+        //check custom format
+        if (preg_match('/([\d\w]+)_(\d{4}\-\d{2}\-\d{2}=\d{2}:\d{2}:\d{2})_(.*)/', $filename, $matches)){
+            //echo str_replace('=',' ',$matches[2]);die;
+            $buf= array(
+                'timestamp' => floatval(strtotime(str_replace('=',' ',$matches[2]))),
+                'wall_time' => null,
+                'sql_queries' => 0,
+                'namespace' => $matches[3]
+            );
+            return $buf;
+        }
+
 
         $name_parts = explode('.', $filename);
         $shortname = array_shift($name_parts);
@@ -369,7 +379,7 @@ class FileStorage extends AbstractStorage
             'timestamp' => floatval($shortname),
             'wall_time' => $wt,
             'sql_queries' => intval($slq_queries),
-            'namespace' => $namespace
+            'namespace' => !empty($namespace) ? $namespace : $shortname
         );
 
         return $buf;
