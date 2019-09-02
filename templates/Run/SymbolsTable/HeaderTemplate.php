@@ -36,7 +36,7 @@ class HeaderTemplate
             ),
             'bcc' => array(
                 'percentage' => function($info) {
-                    return $info['queries'] ?? 0;
+                    return (isset($info['queries'])) ? $info['queries'] : 0;
                 },
                 'cb' => 'xhprof_count_format',
             ),

@@ -81,11 +81,13 @@ class FileStorage extends AbstractStorage
         $grandTotal = $total;
 
         // apply filters
+        /*
         foreach ($bufFiles as $index => $file) {
             if (!($file['timestamp'] >= $params['timestamp_from'] && $file['timestamp'] <= $params['timestamp_to'])) {
                 unset($bufFiles[$index]);
             }
         }
+        */
 
         if (!empty($params['text'])) {
             foreach ($bufFiles as $index => $file) {
@@ -141,14 +143,14 @@ class FileStorage extends AbstractStorage
         foreach ($sqlData['queries'] as $query) {
             foreach ($query['traces'] as $trace) {
                 foreach ($trace['rst'] as $key) {
-                    $xhprofData[$key]['queries'] = $xhprofData[$key]['queries'] ?? 0;
+                    $xhprofData[$key]['queries'] = isset($xhprofData[$key]['queries']) ? $xhprofData[$key]['queries'] : 0;
                     $xhprofData[$key]['queries']++;
                 }
             }
         }
         foreach($xhprofData as $k => $v) {
             $xhprofData[$k]['bcc'] = '';
-            $xhprofData[$k]['queries'] = $v['queries'] ?? 0;
+            $xhprofData[$k]['queries'] = isset($v['queries']) ? $v['queries'] : 0;
             $kparts = explode('==>', $k);
             if (sizeof($kparts) == 2) {
                 if (isset($sqlData['backtrace_calls'][$kparts[1]])) {
@@ -256,7 +258,7 @@ class FileStorage extends AbstractStorage
                 $result['queries'][$sqlKey]['traces'][$traceKey]['content_short']
                     = htmlspecialchars($this->shortenStackTrace($row[2]));
                 $result['queries'][$sqlKey]['traces'][$traceKey]['rst']
-                    = $this->representativeStackTrace($row[2], $params['xhprof_data'] ?? []);
+                    = $this->representativeStackTrace($row[2], (isset($params['xhprof_data']) ? $params['xhprof_data'] : []));
             }
 
             if ($params['sort_by'] != 'exec_order') {
@@ -356,6 +358,7 @@ class FileStorage extends AbstractStorage
             );
         }
 
+
         $name_parts = explode('.', $filename);
         $shortname = array_shift($name_parts);
         $shortname .= '.' . array_shift($name_parts);
@@ -400,7 +403,7 @@ class FileStorage extends AbstractStorage
      * @param string $trace
      * @return array
      */
-    protected function representativeStackTrace(string $trace, array $xhpData): array
+    protected function representativeStackTrace(string $trace, array $xhpData)
     {
         static $xhpStartCalls = null;
         if (is_null($xhpStartCalls)) {
@@ -425,10 +428,10 @@ class FileStorage extends AbstractStorage
             $line = str_replace('->', '::', $line);
 
             $calledKey = $line;
-            if (($called[$line] ?? 0) > 0) {
+            if ((isset($called[$line]) ? $called[$line] : 0) > 0) {
                 $line .= "@{$called[$line]}";
             }
-            $called[$calledKey] = $called[$calledKey] ?? 0;
+            $called[$calledKey] = isset($called[$calledKey]) ? $called[$calledKey] : 0;
             $called[$calledKey]++;
 
             $callLine = "$lastCall$delim$line";
@@ -459,7 +462,7 @@ class FileStorage extends AbstractStorage
         return $out;
     }
 
-    protected function compareStacks(array $xhpData, array $needleKeys): array
+    protected function compareStacks(array $xhpData, array $needleKeys)
     {
         $out = [];
         foreach ($needleKeys as $key) {
